@@ -137,7 +137,7 @@ ${bars}
 <rect x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="24" stroke="${D.line}"/>`;
   return svg({
     w: W, h: H, title: `${USER}: ${s.total} contributions in the last year`,
-    desc: `Current streak ${s.current} days, longest ${s.longest} days, ${s.activeDays} active days.`,
+    desc: `Current streak ${s.current} ${s.current === 1 ? "day" : "days"}, longest ${s.longest} ${s.longest === 1 ? "day" : "days"}, ${s.activeDays} active ${s.activeDays === 1 ? "day" : "days"}.`,
     fonts: ['display', 'sans', 'mono'], css, defs, body,
   });
 }
