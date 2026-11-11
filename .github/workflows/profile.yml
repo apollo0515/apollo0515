@@ -1,0 +1,51 @@
+name: Profile graphics
+
+# Redraws the activity card and the contribution snake every day and publishes
+# them to the `output` branch, which the README links to.
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['scripts/**', '.github/workflows/profile.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profile-graphics
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Activity card
+        run: node scripts/stats.mjs --user "${{ github.repository_owner }}" --out dist/stats.svg
+        env:
+          # Optional: add a PROFILE_TOKEN secret (classic PAT, read:user) to include private contributions.
+          GITHUB_TOKEN: ${{ secrets.PROFILE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Contribution snake
+        uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/snake-dark.svg?palette=github-dark&color_snake=#ff6a2b&color_dots=#161b22,#3a1d12,#7a3417,#d0581f,#ffb648
+            dist/snake-light.svg?color_snake=#ff6a2b&color_dots=#ebedf0,#ffd9c2,#ffb07a,#ff7f3f,#d9480f
+
+      - name: Publish to the output branch
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: output
+          build_dir: dist
+          commit_message: Update profile graphics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
